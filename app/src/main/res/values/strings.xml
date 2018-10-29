@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">MyWeather</string>
+    <string name="url">http://api.openweathermap.org/data/2.5/forecast</string>
+    <string name="apiKey"></string>
+</resources>
