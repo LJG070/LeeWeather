@@ -1,13 +1,21 @@
 package com.example.dlwls.myweather;
 
+import android.app.LauncherActivity;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Icon;
 import android.icu.text.UnicodeFilter;
 import android.icu.text.UnicodeSet;
 import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.os.TestLooperManager;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,6 +28,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.dlwls.myweather.adapter.WeatherAdapter;
 import com.example.dlwls.myweather.model.Forecast;
@@ -38,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     public LinearLayout weatherList;
     public ListView listView;
     public WeatherAdapter adpater;
+    public List items;
     Spinner spinner;
     Button searchBtn;
     private final static String TAG = "SimpleWeather";
@@ -52,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
         ApplicationShare app = (ApplicationShare)getApplication();
         String apiKey = app.getApiKey();
         Log.d(TAG, "API KEY = " + apiKey);
-
         //weatherList = (LinearLayout)findViewById(R.id.weather_list);
         spinner = (Spinner)findViewById(R.id.spinner);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, data);
@@ -103,33 +112,29 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(WeatherForecast weatherForecast) {
 
             super.onPostExecute(weatherForecast);
-//            for(Forecast forecast : weatherForecast.forecastList){
-//                View item = View.inflate(MainActivity.this, R.layout.weather_item, null);
-//                TextView tvDate = (TextView)item.findViewById(R.id.tvDate);
-//                TextView tvTemp = (TextView)item.findViewById(R.id.tvTemp);
-//                TextView tvDesc = (TextView)item.findViewById(R.id.tvDesc);
-//                ImageView imageView = (ImageView)item.findViewById(R.id.imgIcon);
-//                imageView.setTag(forecast.weather.icon);
-//                StringTokenizer st= new StringTokenizer(forecast.dtTxt," ");
-//                String date = st.nextToken();
-//                String[] dates = date.split("-");
-//
-//                tvDate.setText(date +  st.nextToken().substring(0,2));
-//                tvTemp.setText(forecast.main.temp + "\u2103");
-//                tvDesc.setText(forecast.weather.description);
-//                Log.d("SimpleWeather", forecast.weather.icon);
-//                //image => 별도의 스레드가 필요함
-//                ImageViewTask imageViewTask = new ImageViewTask(getApplicationContext());
-//                imageViewTask.execute(imageView);
-//
-//                weatherList.addView(item);
-//        }
             SystemClock.sleep(3000);
 
             loading.dismiss();
                 adpater = new WeatherAdapter(MainActivity.this, weatherForecast.forecastList);
                 listView = (ListView)findViewById(R.id.weather_list);
                 listView.setAdapter(adpater);
+                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                        Forecast forecast = (Forecast)adapterView.getAdapter().getItem(i);
+                    }
+                });
+
+                Forecast forecast = (Forecast)listView.getAdapter().getItem(0);
+
+            Notification.Builder notifiactionBuilder =
+                    new Notification.Builder(MainActivity.this)
+                            .setSmallIcon(R.drawable.ic_launcher_background)
+                            .setContentTitle("시간 : " + forecast.dtTxt)
+                            .setContentText("기온 : " + forecast.main.temp);
+
+            NotificationManager notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+            notificationManager.notify(0, notifiactionBuilder.build());
         }
 
         @Override
